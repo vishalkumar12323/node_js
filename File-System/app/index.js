@@ -1,0 +1,1 @@
+const number = 99;const number = 99;

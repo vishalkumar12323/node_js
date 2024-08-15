@@ -1,5 +1,5 @@
 const fs = require("fs/promises");
-
+const { existsSync } = require("fs");
 const commands = {
     CREATE: 'CREATE FILE',
     DELETE: 'DELETE FILE',
@@ -10,39 +10,68 @@ const commands = {
 (async function () {
 
     const createFile = async (path) => {
+        let fileHandler;
+        const isFileExist = existsSync(path);
         try {
-            const file = await fs.open(path, 'r');
-            await file.close();
-            console.log(`file ${path} already exist`);
+            if (!isFileExist) {
+                fileHandler = await fs.open(path, 'w');
+                console.log(`file ${path} successfully created.`);
+            } else {
+                throw new Error(`The file ${path} already exist.`)
+            }
         } catch (err) {
-            const file = await fs.open(path, 'w');
-            await file.close();
-            console.log(`file ${path} was successfully created`);
+            console.log(`error while creating file `, err);
+            return;
+        } finally {
+            await fileHandler?.close();
         }
     };
 
     const renameFile = async (oldName, newName) => {
+        const isFileExist = existsSync(oldName);
         try {
-            await fs.rename(oldName, newName);
+            if (isFileExist) {
+                await fs.rename(oldName, newName);
+            } else {
+                throw new Error(`The file ${oldName} not exist`);
+            }
         } catch (err) {
             console.log('error while renaming the file ', err);
         };
     };
 
     const deleteFile = async (file) => {
+        const isFileExist = existsSync(file);
         try {
-            await fs.rm(file);
+            if (isFileExist) {
+                await fs.rm(file);
+            } else {
+                throw new Error(`The file ${file} not exist`);
+            }
         } catch (err) {
             console.log('error while deleting file ', err);
         };
     };
 
+    let existingFileContent;
     const editFile = async (file, content) => {
+        let fileHandler;
+        const isFileExist = existsSync(file);
+        if (existingFileContent === content) return;
         try {
-            await fs.writeFile(file, content, { encoding: 'utf-8' });
+            if (isFileExist) {
+                fileHandler = await fs.open(file, 'a');
+                await fileHandler.appendFile(content);
+                existingFileContent = content;
+                return;
+            } else {
+                throw new Error(`The file ${file} not exist`);
+            }
         } catch (err) {
             console.log(`error while editing file `, err);
-        };
+        } finally {
+            fileHandler?.close();
+        }
     };
 
 
