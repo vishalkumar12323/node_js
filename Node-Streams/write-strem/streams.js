@@ -14,13 +14,13 @@ console.time('T');
     };
     writeData();
 
-    let n = 0;
+    // let n = 0;
     stream.on("drain", () => {
-        console.log('drained ', n++);
+        // console.log('drained ', n++);
         writeData();
     });
     stream.on('finish', async () => {
-        console.log(stream.writableHighWaterMark);
+        // console.log(stream.writableHighWaterMark);
         console.timeEnd("T");
         await fileHandler.close();
     });

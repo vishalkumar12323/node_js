@@ -9,10 +9,12 @@ const fs = require('node:fs/promises');
     while (readByte !== 0) {
         const result = await srcFile.read();
         readByte = result.bytesRead;
+        destFile.write(buff, 0, buff.length, null);
         if (readByte !== 16384) {
+
             const indexNotfilled = result.buffer.indexOf(0);
             const newBuffer = Buffer.alloc(indexNotfilled);
-            await destFile.write(newBuffer, 0, 0, indexNotfilled);
+            await destFile.write(newBuffer, 0, 0,);
         } else {
             await destFile.write(result.buffer);
         }
