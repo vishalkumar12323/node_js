@@ -1,8 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-console.time('Time:');
-const file = path.join(__dirname, 'one.txt');
+console.time("Time:");
+const file = path.join(__dirname, "one.txt");
 
 /*
     synchoronous example:
@@ -17,7 +17,6 @@ const file = path.join(__dirname, 'one.txt');
 // fs.close(fileDec);
 // console.timeEnd("s");
 
-
 /*
     callback and sync example:
     TIME uses: 10s
@@ -25,11 +24,11 @@ const file = path.join(__dirname, 'one.txt');
     RAM uses: 1GB
 */
 
-// fs.open(file, 'w', (err, fd) => {
-//     for (let i = 0; i < 1000000; i++) {
-//         const buff = Buffer.from(`${i} `, 'binary');
-//         fs.writeSync(fd, buff);
-//     };
-//     fs.close(fd);
-//     console.timeEnd('Time:')
-// });
+fs.open(file, "w", (err, fd) => {
+  for (let i = 0; i < 100000000; i++) {
+    const buff = Buffer.from(`${i} `, "binary");
+    fs.writeSync(fd, buff);
+  }
+  fs.close(fd);
+  console.timeEnd("Time:");
+});
