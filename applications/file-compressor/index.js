@@ -1,17 +1,10 @@
-const { pipeline } = require("node:stream").promises;
-const { createReadStream, createWriteStream } = require("node:fs");
-const zlib = require("node:zlib");
+const { FileZipper } = require("./lib/index");
 
-(async function () {
-  const dataSize = 10 * 1024; // 10kb
-  const source = createReadStream("read.txt", { highWaterMark: dataSize });
-  const gzip = zlib.createGzip({ chunkSize: dataSize });
-  const destination = createWriteStream("write.txt.gz", {
-    highWaterMark: dataSize,
-  });
-  try {
-    await pipeline(source, gzip, destination);
-  } catch (err) {
-    console.log("error ", err);
-  }
-})();
+const zip = new FileZipper({
+  encoding: "utf-8",
+  readableHighWaterMark: 10 * 1024,
+  writableHighWaterMark: 10 * 1024,
+});
+
+// zip.compress({ sourcePath: "./read.txt", destPath: "./write.txt.gz" });
+zip.decompress({ sourcePath: "./write.txt.gz", destPath: "./new.txt" });
