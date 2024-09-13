@@ -1,18 +1,17 @@
-const fs = require("node:fs/promises");
+// const fs = require("node:fs/promises");
+const readline = require("node:readline");
 
 (async function () {
-  const file = fs.open("write.txt.gz", "r");
-  const stream = (await file).createReadStream({
-    encoding: "utf-8",
-    highWaterMark: 10 * 1024,
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
   });
 
-  stream.on("data", (chunk) => {
-    console.log(chunk.toString("hex"));
-  });
-
-  stream.on("end", async () => {
-    console.log("reading finish");
-    (await file).close();
+  // rl.question("what's your name: ", (name) => {
+  //   console.log("my name is ", name);
+  // });
+  rl.on("line", (str) => {
+    console.log(str + "\n");
+    console.log(rl.cursor, " ", rl.line);
   });
 })();
