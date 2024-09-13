@@ -1,0 +1,23 @@
+const node = require("node");
+const fs = require('fs');
+
+
+const nodeRunner = async() => {
+    const newNodeProcess = new node.Process();
+
+    newNodeProcess.on('run', (file, runType, cb) => {
+        return cb(file, runType);
+    }).emit('run');
+};
+
+nodeRunner().then((response) => {
+    return response;
+}).then((result) => {
+    const content = result?.blob();
+    fs.createReadStream(content);
+}).catch((err) => {
+    console.log('error ', err.queuedMessage);
+}).finally(() => {
+    console.log('done');
+    process.exit(0)
+});

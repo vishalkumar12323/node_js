@@ -1,0 +1,13 @@
+{
+  "name": "file-compressor",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "dev": "node index"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "An application for compressing(zip or unzip) file using node stream and zlib"
+}
