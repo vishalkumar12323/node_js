@@ -5,7 +5,12 @@ const port = 4080,
 const server = net.createServer((socket) => {
   console.log("a new connection was made from the client-side.");
 });
+// server.on("close", () => {
+//   console.log("finally server closed");
+// });
 
-server.listen(port, hostname, () =>
-  console.log(`TCP server running on `, server.address())
-);
+server.listen({ port, hostname }, () => {});
+
+// server.close((err) => {
+//   console.log("err ", err);
+// });

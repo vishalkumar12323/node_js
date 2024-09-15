@@ -7,6 +7,6 @@ http
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify({ name: "http application" }));
   })
-  .listen(port, hostname, () => {
-    console.log(`server run on http://${hostname}:${port}`);
+  .listen({ port, hostname }, () => {
+    console.log("server on");
   });
