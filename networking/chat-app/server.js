@@ -4,7 +4,9 @@ const port = 4080,
   hostname = "127.0.0.1";
 
 const clients = [];
-const server = net.createServer((socket) => {
+const server = net.createServer();
+
+server.on("connection", (socket) => {
   socket.on("data", (data) => {
     console.log(data.toString("utf-8"));
     clients.forEach((s) => {
