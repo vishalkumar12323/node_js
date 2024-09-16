@@ -2,15 +2,21 @@ const net = require("node:net");
 
 const port = 4080,
   hostname = "127.0.0.1";
+
+const clients = [];
 const server = net.createServer((socket) => {
-  console.log("a new connection was made from the client-side.");
+  socket.on("data", (data) => {
+    console.log(data.toString("utf-8"));
+    clients.forEach((s) => {
+      socket.on("data", (data) => {
+        s.write(data);
+      });
+    });
+  });
+
+  clients.push(socket);
 });
-// server.on("close", () => {
-//   console.log("finally server closed");
-// });
 
-server.listen({ port, hostname }, () => {});
-
-// server.close((err) => {
-//   console.log("err ", err);
-// });
+server.listen({ port, hostname }, () =>
+  console.log(`server on to the http://${hostname}:${port}`)
+);
