@@ -6,7 +6,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const clearLine = async (direction) => {
+const clearLine = (direction) => {
   return new Promise((resolve, reject) => {
     process.stdout.clearLine(direction, () => {
       resolve();
@@ -14,7 +14,7 @@ const clearLine = async (direction) => {
   });
 };
 
-const moveCursor = async (dx, dy) => {
+const moveCursor = (dx, dy) => {
   return new Promise((resolve, reject) => {
     process.stdout.moveCursor(dx, dy, () => {
       resolve();
@@ -34,16 +34,21 @@ const socket = net.createConnection(
 
     ask();
 
+    let userId;
     socket.on("data", async (data) => {
-      console.log();
-      await moveCursor(0, -1);
-      await clearLine(0);
-      console.log(data.toString("utf-8"));
-      ask();
+      if (data.toString("utf-8").substring(0, 2) === "id") {
+        userId = Number(data.toString("utf-8").split(" ")[1]);
+      } else {
+        console.log();
+        await moveCursor(0, -1);
+        await clearLine(0);
+        console.log("User " + userId + "->" + " " + data.toString("utf-8"));
+        ask();
+      }
     });
   }
 );
 
 socket.on("end", () => {
-  console.log("connection ended!");
+  console.log("connection was ended!");
 });
