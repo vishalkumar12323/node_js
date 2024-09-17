@@ -21,6 +21,8 @@ const moveCursor = (dx, dy) => {
     });
   });
 };
+
+let userId;
 const socket = net.createConnection(
   { port: 4080, host: "127.0.0.1" },
   async () => {
@@ -29,26 +31,25 @@ const socket = net.createConnection(
       const message = await rl.question("Enter Message:> ");
       await moveCursor(0, -1);
       await clearLine(0);
-      socket.write(message);
+      socket.write(`${userId}-message-${message}`);
     };
 
     ask();
 
-    let userId;
     socket.on("data", async (data) => {
+      console.log();
+      await moveCursor(0, -1);
+      await clearLine(0);
       if (data.toString("utf-8").substring(0, 2) === "id") {
-        userId = Number(data.toString("utf-8").split(" ")[1]);
+        userId = Number(data.toString("utf-8").substring(3));
+        console.log(`Your id is: ${userId}`);
       } else {
-        console.log();
-        await moveCursor(0, -1);
-        await clearLine(0);
-        console.log("User " + userId + "->" + " " + data.toString("utf-8"));
-        ask();
+        console.log(data.toString("utf-8"));
       }
+      ask();
     });
   }
 );
-
 socket.on("end", () => {
   console.log("connection was ended!");
 });
