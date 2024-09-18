@@ -10,8 +10,8 @@ server.on("connection", (socket) => {
   console.log("A new connection to the server!");
   const clientId = clients.length + 1;
 
-  clients.map((client) => {
-    client.socket.write(`User ${clientId} joined chat.`);
+  users.map((user) => {
+    user?.socket.write(`User ${user.username} joined chat.`);
   });
 
   socket.write(`id ${clientId}`);
@@ -24,27 +24,27 @@ server.on("connection", (socket) => {
         return {
           ...user,
           userId: clientId,
+          socket: clients[clientId],
         };
       });
     }
-    // const userId = dataString.substring(0, dataString.indexOf("-"));
     const message = dataString.substring(dataString.indexOf("-message-") + 9);
-    users.forEach((user) => {
-      socket.write(`User ${user.userId} ${user.username}: ${message}`);
+    users.map((user) => {
+      user.socket.write(`User ${user.userId} ${user.username}: ${message}`);
     });
   });
 
   socket.on("end", () => {
-    clients.map((client) => {
-      client.socket.write(`User ${clientId} left to the chat`);
+    users.map((user) => {
+      user.socket.write(`User ${user.username} left to the chat`);
     });
   });
   socket.on("error", () => {
-    clients.map((client) => {
-      client.socket.write(`User ${clientId} left to the chat.`);
+    users.map((user) => {
+      user.socket.write(`User ${user.username} left to the chat.`);
     });
   });
-  clients.push({ id: clientId, socket });
+  clients.push(socket);
 });
 
 server.listen({ port, hostname }, () =>
