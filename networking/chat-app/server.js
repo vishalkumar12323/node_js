@@ -1,50 +1,52 @@
 const net = require("node:net");
+const crypto = require("node:crypto");
 
 const port = 4080;
 const hostname = "127.0.0.1";
 
 const server = net.createServer();
-const clients = [];
 let users = [];
 server.on("connection", (socket) => {
   console.log("A new connection to the server!");
-  const clientId = clients.length + 1;
 
-  users.map((user) => {
-    user?.socket.write(`User ${user.username} joined chat.`);
+  users.forEach((user) => {
+    if (user.socket !== socket) {
+      user.socket.write(`User ${user?.username} joined chatroom.`);
+    }
   });
 
-  socket.write(`id ${clientId}`);
+  const userId = crypto.randomUUID({ disableEntropyCache: true });
   socket.on("data", (data) => {
-    const dataString = data.toString("utf-8");
-    // console.log(dataString.substring(0, 5));
-    if (dataString.substring(0, 5) === "users") {
-      users = dataString.substring(dataString.indexOf("user") + 5);
-      users = JSON.parse(users).map((user) => {
+    const userData = data.toString("utf-8");
+    if (userData.substring(0, 4) === "user") {
+      // users.push(userData.substring(userData.indexOf("user") + 4));
+      users.map((user) => {
         return {
           ...user,
-          userId: clientId,
-          socket: clients[clientId],
+          username: userData.substring(userData.indexOf("user") + 4),
         };
       });
     }
-    const message = dataString.substring(dataString.indexOf("-message-") + 9);
-    users.map((user) => {
-      user.socket.write(`User ${user.userId} ${user.username}: ${message}`);
+
+    const userMessage = userData.substring(userData.indexOf("message-") + 8);
+    users.forEach((user) => {
+      if (user.socket !== socket)
+        user.socket.write(`${user.username}:> ${userMessage}`);
     });
   });
 
-  socket.on("end", () => {
-    users.map((user) => {
-      user.socket.write(`User ${user.username} left to the chat`);
-    });
-  });
   socket.on("error", () => {
-    users.map((user) => {
-      user.socket.write(`User ${user.username} left to the chat.`);
-    });
+    console.log("ended");
+    // users.map((user) => {
+    //   user.socket.write(`User ${user.username} left to the chat.`);
+    // });
   });
-  clients.push(socket);
+  users.map((user) => {
+    return {
+      ...user,
+      client: socket,
+    };
+  });
 });
 
 server.listen({ port, hostname }, () =>

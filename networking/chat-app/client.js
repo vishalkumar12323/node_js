@@ -22,20 +22,17 @@ const moveCursor = (dx, dy) => {
   });
 };
 
-let userId;
-const users = [];
 const socket = net.createConnection(
   { port: 4080, host: "127.0.0.1" },
   async () => {
     console.log("connected to the server");
-    const username = await rl.question("Please Enter Your Name: ");
-    users.push({ username });
-    socket.write("users" + JSON.stringify(users));
+    const username = await rl.question("Please Enter Your Name:> ");
+    socket.write(`user ${username}`);
     const ask = async () => {
       const message = await rl.question("Enter Message:> ");
       await moveCursor(0, -1);
       await clearLine(0);
-      socket.write(`${userId}-message-${message}`);
+      socket.write(`message-${message}`);
     };
 
     ask();
@@ -44,12 +41,7 @@ const socket = net.createConnection(
       console.log();
       await moveCursor(0, -1);
       await clearLine(0);
-      if (data.toString("utf-8").substring(0, 2) === "id") {
-        userId = Number(data.toString("utf-8").substring(3));
-        // console.log(`Your id is: ${userId}`);
-      } else {
-        console.log(data.toString("utf-8"));
-      }
+      console.log(data.toString("utf-8"));
       ask();
     });
   }
