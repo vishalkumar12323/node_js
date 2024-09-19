@@ -8,24 +8,22 @@ const server = net.createServer();
 server.on("connection", (socket) => {
   console.log("new connection to the server");
 
+  let fileHandler, stream;
   socket.on("data", async (data) => {
-    let fileHandler;
     try {
-      fileHandler = await fs.open("file.txt", "w");
-      const stream = fileHandler.createWriteStream({ encoding: "utf-8" });
+      if (!fileHandler) {
+        fileHandler = await fs.open("file.txt", "w");
+        stream = fileHandler.createWriteStream({ encoding: "utf-8" });
+      }
 
       stream.write(data);
-
-      stream.end(" done");
-
-      stream.on("finish", () => {
-        console.log("data uploaded successfully");
-      });
     } catch (err) {
       console.log("error ", err);
-    } finally {
-      await fileHandler.close();
     }
+
+    stream.on("finish", async () => {
+      await fileHandler.close();
+    });
   });
 
   socket.on("close", () => {

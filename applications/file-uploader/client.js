@@ -1,15 +1,27 @@
 const net = require("node:net");
 const fs = require("node:fs/promises");
 
-const s = new net.Socket();
-// const socket = net.createConnection({ port: 4050, host: "::1" }, () => {
-//   socket.on("connect", () => {
-//     console.log("successfully connection established to the server");
-//     socket.write("this the TCP server created by using node net module");
-//   });
-// });
-
-s.connect({ port: 4050, host: "::1", family: "IPv6" }, () => {
-  console.log("connected");
+const socket = net.createConnection({ port: 4050, host: "::1" }, () => {
+  console.log("connected to the server");
 });
-s.write("hello world.");
+
+async function init() {
+  const fileHandler = await fs.open("one.txt", "r");
+  const stream = fileHandler.createReadStream({ encoding: "utf-8" });
+
+  stream.on("data", (data) => {
+    if (!socket.write(data)) {
+      stream.pause();
+    }
+  });
+
+  socket.on("drain", () => {
+    console.log("drained");
+    stream.resume();
+  });
+  stream.on("end", () => {
+    console.log("file uploaded completed");
+  });
+}
+
+init();
