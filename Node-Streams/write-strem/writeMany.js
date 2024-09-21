@@ -25,8 +25,9 @@ const file = path.join(__dirname, "one.txt");
 */
 
 fs.open(file, "w", (err, fd) => {
+  if (err) console.log("error ", err);
   for (let i = 0; i < 100000000; i++) {
-    const buff = Buffer.from(`${i} `, "binary");
+    const buff = Buffer.from(`${i} `, "utf-8");
     fs.writeSync(fd, buff);
   }
   fs.close(fd);
