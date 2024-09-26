@@ -1,5 +1,5 @@
 const net = require("node:net");
-const server = net.createServer((socket) => {});
+const server = net.createServer();
 
 server.on("connection", (socket) => {
   socket.on("data", (data) => {
