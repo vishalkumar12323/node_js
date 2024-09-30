@@ -11,6 +11,7 @@ class Express {
      * }
      */
     this.routes = {};
+    this.middleware = [];
 
     this.app.on("request", (req, res) => {
       res.sendFile = async (path, mimeType) => {
@@ -39,7 +40,23 @@ class Express {
           .status(404, "Not-Found")
           .sendError(`Cannot get ${req.method} ${req.url}`);
       }
-      this.routes[req.method.toLowerCase() + req.url](req, res);
+
+      this.middleware[0](req, res, () => {
+        this.middleware[1](req, res, () => {
+          this.middleware[2](req, res, () => {
+            this.routes[req.method.toLowerCase() + req.url](req, res);
+          });
+        });
+      });
+
+      const recursiveRun = () => {
+        const n = this.middleware.length;
+        if (n === this.middleware.length) {
+          this.routes[req.method.toLowerCase() + req.url](req, res);
+        } else {
+          this.middleware[n + 1](req, res, () => {});
+        }
+      };
     });
   }
 
@@ -47,6 +64,9 @@ class Express {
     this.routes[method + path] = cb;
   }
 
+  use(cb) {
+    this.middleware.push(cb);
+  }
   start({ port, hostname }, cb) {
     this.app.listen(port, hostname, () => {
       cb();
