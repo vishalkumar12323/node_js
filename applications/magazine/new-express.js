@@ -14,6 +14,7 @@ class Express {
     this.middleware = [];
 
     this.app.on("request", (req, res) => {
+      // SendFile method for serve static files to client.
       res.sendFile = async (path, mimeType) => {
         const fileHandler = await fs.open(path, "r");
         const stream = fileHandler.createReadStream();
@@ -22,51 +23,54 @@ class Express {
         stream.pipe(res);
       };
 
+      // Status method send to status-code & message in response for the client.
       res.status = (statusCode, message = "") => {
         res.statusCode = statusCode;
         res.statusMessage = message;
         return res;
       };
+
+      // Json method used for sending json data as response to the client.
       res.json = (data) => {
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(data));
       };
 
+      // Send an error back to the client.
       res.sendError = (message) => {
         res.end(message);
       };
-      if (!this.routes[req.method.toLowerCase() + req.url]) {
-        return res
-          .status(404, "Not-Found")
-          .sendError(`Cannot get ${req.method} ${req.url}`);
-      }
 
-      this.middleware[0](req, res, () => {
-        this.middleware[1](req, res, () => {
-          this.middleware[2](req, res, () => {
+      // call the all middleware function in req, res cycle.
+      const runMiddleware = (req, res, middleware, idx) => {
+        if (idx === middleware.length) {
+          if (!this.routes[req.method.toLowerCase() + req.url]) {
+            // console.log("run........");
+            return res
+              .status(404, "Not-Found")
+              .sendError(`Cannot get ${req.method} ${req.url}`);
+          } else {
             this.routes[req.method.toLowerCase() + req.url](req, res);
-          });
-        });
-      });
-
-      const recursiveRun = () => {
-        const n = this.middleware.length;
-        if (n === this.middleware.length) {
-          this.routes[req.method.toLowerCase() + req.url](req, res);
+          }
         } else {
-          this.middleware[n + 1](req, res, () => {});
+          this.middleware[idx](req, res, () => {
+            runMiddleware(req, res, middleware, idx + 1);
+          });
         }
       };
+
+      runMiddleware(req, res, this.middleware, 0);
     });
   }
 
   route(method = "", path = "", cb) {
-    this.routes[method + path] = cb;
+    this.routes[method.toLowerCase() + path] = cb;
   }
 
   use(cb) {
     this.middleware.push(cb);
   }
+
   start({ port, hostname }, cb) {
     this.app.listen(port, hostname, () => {
       cb();
