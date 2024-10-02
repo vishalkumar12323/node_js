@@ -1,14 +1,15 @@
 const net = require("node:net");
 const readline = require("node:readline/promises");
+const crypto = require("node:crypto");
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const clearLine = (direction) => {
+const clearLine = (dir) => {
   return new Promise((resolve, reject) => {
-    process.stdout.clearLine(direction, () => {
+    process.stdout.clearLine(dir, () => {
       resolve();
     });
   });
@@ -22,30 +23,35 @@ const moveCursor = (dx, dy) => {
   });
 };
 
-const socket = net.createConnection(
-  { port: 4080, host: "127.0.0.1" },
-  async () => {
-    console.log("connected to the server");
-    const username = await rl.question("Please Enter Your Name:> ");
-    socket.write(`user ${username}`);
-    const ask = async () => {
-      const message = await rl.question("Enter Message:> ");
-      await moveCursor(0, -1);
-      await clearLine(0);
-      socket.write(`message-${message}`);
-    };
+const socekt = net.createConnection({
+  port: 8080,
+  host: "::1",
+  family: "IPv6",
+});
 
-    ask();
+socekt.on("connect", async () => {
+  const userId = crypto.randomUUID().toString();
+  const userName = await rl.question("Enter Your Name:> ");
 
-    socket.on("data", async (data) => {
-      console.log();
-      await moveCursor(0, -1);
-      await clearLine(0);
-      console.log(data.toString("utf-8"));
-      ask();
-    });
-  }
-);
-socket.on("end", () => {
-  console.log("connection was ended!");
+  const user = JSON.stringify({ userId, userName });
+
+  socekt.write(`user${user}`);
+
+  const askQuestion = async () => {
+    const message = await rl.question("Enter your message:> ");
+    await moveCursor(0, -1);
+    await clearLine(0);
+    socekt.write(message);
+    askQuestion();
+  };
+
+  askQuestion();
+
+  socekt.on("data", async (data) => {
+    console.log();
+    await moveCursor(0, -1);
+    await clearLine(0);
+    console.log(data.toString("utf-8"));
+    askQuestion();
+  });
 });
