@@ -13,10 +13,15 @@ server.on("connection", (socekt) => {
     if (userData.substring(0, 4) === "user") {
       user = userData.substring(userData.indexOf("user") + 4);
       user = JSON.parse(user);
-    } else {
-      console.log(data.toString("utf-8"));
-      // socekt.write(data);
+      socekt.user = user;
+      users.push(socekt);
     }
+
+    users.map((skt) => {
+      if (skt !== socekt) {
+        socekt.write(`Sending from ${socekt?.user?.userName}: ${userData}`);
+      }
+    });
   });
 
   socekt.on("error", (err) => {
