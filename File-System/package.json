@@ -1,5 +1,5 @@
 {
-  "name": "node_js",
+  "name": "file-system",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -8,5 +8,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.7.4"
+  }
 }
