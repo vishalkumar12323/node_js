@@ -1,6 +1,7 @@
 const http = require("node:http");
 const fs = require("node:fs/promises");
-
+const path = require("node:path");
+const { getType } = require("./utils");
 class Express {
   constructor() {
     this.app = http.createServer();
@@ -15,14 +16,33 @@ class Express {
 
     this.app.on("request", (req, res) => {
       // SendFile method for serve static files to client.
-      res.sendFile = async (path, mimeType) => {
-        const fileHandler = await fs.open(path, "r");
+      res.sendFile = async (filename) => {
+        const fileHandler = await fs.open(filename, "r");
         const stream = fileHandler.createReadStream();
 
-        res.setHeader("Content-Type", mimeType);
+        res.setHeader("Content-Type", getType(filename));
         stream.pipe(res);
       };
 
+      res.serve = async (publicDir) => {
+        const dir = path.resolve(publicDir);
+        const dirent = await fs.readdir(dir, {
+          recursive: true,
+          withFileTypes: true,
+        });
+        dirent.forEach(async (d) => {
+          if (d.isDirectory()) {
+            return;
+          } else {
+            const filePath = path.resolve(d.parentPath, d.name);
+            const fileHandler = await fs.open(filePath, "r");
+            const fileStream = fileHandler.createReadStream();
+
+            res.setHeader("Content-Type", getType(d.parentPath, d.name));
+            fileStream.pipe(res);
+          }
+        });
+      };
       // Status method send to status-code & message in response for the client.
       res.status = (statusCode, message = "") => {
         res.statusCode = statusCode;
