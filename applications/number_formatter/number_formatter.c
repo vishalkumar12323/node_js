@@ -11,7 +11,6 @@ int main(int args, char* argv[]) {
         fflush(outputFile);
         c = fgetc(stdin);
     }
-
-
+    
     return 0;
 }
